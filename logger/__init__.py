@@ -1,13 +1,8 @@
 import json
-import requests
 import logging
-import logging
-import os
-import io
-import sys
 import traceback
-from inspect import getframeinfo, stack
 from datetime import datetime
+import requests
 from pytz import timezone
 
 
@@ -47,10 +42,8 @@ class LoggingELK:
             parsed_url = "{}{}/_doc/".format(self.elk_host, self.translate_index_name[key])
             requests.request("POST", parsed_url, data=json.dumps(date_payload), headers=headers)
 
-    def parse_full_stack(self, full_traceback):
-        final_stack = []
-        # for item in full_traceback:
-        #    final_stack.append({"filename": item.filename, "line": item.line, "lineno": item.lineno, "locals": item.locals, "name": item.name})
+    @staticmethod
+    def parse_full_stack(full_traceback):
         item = full_traceback[len(full_traceback) - 2]
         return {"filename": item.filename, "line": item.line, "lineno": item.lineno, "locals": item.locals, "name": item.name}
 
@@ -59,12 +52,11 @@ class LoggingELK:
             # não da pra inserir sem falar qual o host
             raise ValueError("É necessário definir qual o HOST do ELK caso auto_insert = True")
 
-    def info(self, data: str, insert_elk=False):
+    def info(self, data: str):
         """
             Exibe e/ou insere algum log do tipo Info
 
             :param data: data that we will display or saved
-            :param insert_elk: bool que define se devemos ou não inserir no ELK
             :return: None
         """
 
@@ -73,24 +65,22 @@ class LoggingELK:
 
         logging.info(data)
 
-    def warning(self, data: str, insert_elk=False):
+    def warning(self, data: str):
         """
             Exibe e/ou insere algum log do tipo Warning
 
             :param data: data that we will display or saved
-            :param insert_elk: bool que define se devemos ou não inserir no ELK
             :return: None
         """
         self.check_params()
         self.insert_payload(data, "warning")
         logging.warning(data)
 
-    def error(self, data: str, insert_elk=False):
+    def error(self, data: str):
         """
             Exibe e/ou insere algum log do tipo Error
 
             :param data: data that we will display or saved
-            :param insert_elk: bool que define se devemos ou não inserir no ELK
             :return:
         """
 
@@ -135,4 +125,3 @@ class LoggingELK:
 
             except Exception as error:
                 logging.warning("Não foi possível inserir o LOG do tipo {} no indice {}, status_code gerado: {}".format(log_type, self.translate_index_name[log_type], error))
-
