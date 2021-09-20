@@ -61,7 +61,7 @@ class LoggingELK:
         """
 
         self.check_params()
-        self.insert_payload(data, "info")
+        # self.insert_payload(data, "info")
 
         logging.info(data)
 
@@ -73,7 +73,7 @@ class LoggingELK:
             :return: None
         """
         self.check_params()
-        self.insert_payload(data, "warning")
+        # self.insert_payload(data, "warning")
         logging.warning(data)
 
     def error(self, data: str):
@@ -85,7 +85,7 @@ class LoggingELK:
         """
 
         self.check_params()
-        self.insert_payload(data, "error")
+        # self.insert_payload(data, "error")
 
         logging.error(data)
 
