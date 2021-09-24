@@ -38,9 +38,9 @@ class LoggingELK:
                 }
             }
         }
-        for key in self.translate_index_name:
-            parsed_url = "{}{}/_doc/".format(self.elk_host, self.translate_index_name[key])
-            requests.request("POST", parsed_url, data=json.dumps(date_payload), headers=headers)
+        # for key in self.translate_index_name:
+        #     parsed_url = "{}{}/_doc/".format(self.elk_host, self.translate_index_name[key])
+        #     requests.request("POST", parsed_url, data=json.dumps(date_payload), headers=headers)
 
     @staticmethod
     def parse_full_stack(full_traceback):
