@@ -8,12 +8,13 @@ from pytz import timezone
 
 class LoggingELK:
 
-    def __init__(self, insert_elk, elk_host):
+    def __init__(self, insert_elk, elk_host, api_key=None):
         """
         :param insert_elk: true para inserir os dados automaticamente no indice do ELK
         :param elk_host: ip publico do ELK
         """
         self.elk_host = elk_host  # elk host ip address
+        self.api_key = api_key # elk api key (if exists)
         self.index_elk_info = "info-logs"  # elk info logs index name
         self.index_elk_warning = "warning-logs"  # elk warning logs index name
         self.index_elk_errors = "errors-logs"  # elk errors logs index name
@@ -23,11 +24,20 @@ class LoggingELK:
         self.infos_about_execution = self.parse_full_stack(traceback.extract_stack())
         self.time_zone = 'America/Sao_Paulo'
         logging.basicConfig(format=self.format, datefmt='%Y-%m-%d,%H:%M:%S:%f', level=logging.INFO)
+        
+        #fix elk_host string (must end with '/'):
+        if self.elk_host is not None:
+            if self.elk_host[-1] != '/':
+                self.elk_host = self.elk_host + '/'
 
         # precisamos criar o indice avisando qual o tipo do campo pro elk ficar no jeito
-        headers = {
+        self.headers = {
             'Content-Type': "application/json",
         }
+
+        #Add ELK API key to the headers of the request if exists
+        if self.api_key is not None:
+            self.headers['Authorization'] = "ApiKey " + self.api_key
 
         date_payload = {
             "mappings": {
@@ -40,7 +50,7 @@ class LoggingELK:
         }
         # for key in self.translate_index_name:
         #     parsed_url = "{}{}/_doc/".format(self.elk_host, self.translate_index_name[key])
-        #     requests.request("POST", parsed_url, data=json.dumps(date_payload), headers=headers)
+        #     requests.request("POST", parsed_url, data=json.dumps(date_payload), headers=self.headers)
 
     @staticmethod
     def parse_full_stack(full_traceback):
@@ -61,7 +71,7 @@ class LoggingELK:
         """
 
         self.check_params()
-        # self.insert_payload(data, "info")
+        self.insert_payload(data, "info")
 
         logging.info(data)
 
@@ -73,7 +83,7 @@ class LoggingELK:
             :return: None
         """
         self.check_params()
-        # self.insert_payload(data, "warning")
+        self.insert_payload(data, "warning")
         logging.warning(data)
 
     def error(self, data: str):
@@ -85,7 +95,7 @@ class LoggingELK:
         """
 
         self.check_params()
-        # self.insert_payload(data, "error")
+        self.insert_payload(data, "error")
 
         logging.error(data)
 
@@ -93,9 +103,7 @@ class LoggingELK:
 
         if self.insert_elk is True:
 
-            headers = {
-                'Content-Type': "application/json",
-            }
+            headers = self.headers
 
             # precisamos fazer isso pra garantir que todos os serviços enviarão com o mesmo fuso
             data_e_hora_atuais = datetime.now()
